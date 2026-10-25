@@ -103,8 +103,9 @@ BOOL isSelf() {
 // YTMiniPlayerEnabler: https://github.com/level3tjg/YTMiniplayerEnabler/
 %hook YTWatchMiniBarViewController
 - (void)updateMiniBarPlayerStateFromRenderer {
-    if (IsEnabled(@"ytMiniPlayer_enabled")) {}
-    else { return %orig; }
+    if (!IsEnabled(@"ytMiniPlayer_enabled")) {
+        %orig;
+    }
 }
 %end
 
