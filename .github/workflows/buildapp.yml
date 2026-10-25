@@ -160,6 +160,9 @@ jobs:
           # Remove contents in the iPA that interfere with sideloading
           rm -rf main/tmp/Payload/YouTube.app/_CodeSignature/CodeResources
           rm -rf main/tmp/Payload/YouTube.app/PlugIns/*
+          # Newer YouTube IPAs store Apple's migration extension separately from PlugIns.
+          # It keeps the stock bundle ID and fails iLoader's extension-prefix validation.
+          rm -rf main/tmp/Payload/YouTube.app/Extensions
           # Modify Info.plist to remove UISupportedDevices (Python script)
           python - <<EOF
           import plistlib
