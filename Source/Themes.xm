@@ -1215,7 +1215,10 @@ UIColor *customColor = [UIColor colorWithRed:0.129 green:0.129 blue:0.129 alpha:
 %end
 
 %hook UIKBRenderConfig // Prediction text color
-- (void)setLightKeyboard:(BOOL)arg1 { %orig(NO); }
+- (void)setLightKeyboard:(BOOL)arg1 {
+    arg1 = NO;
+    %orig;
+}
 %end
 %end
 
