@@ -193,6 +193,22 @@ jobs:
           test -d "main/Tweaks/YTLite/var/jb/Library/Application Support/YTLite.bundle"
           echo "Downloaded and unpacked YTPlus $YTLITE_VERSION package: $(du -h "$package" | cut -f1)"
 
+      - name: Apply current YTPlus translations
+        run: |
+          source_repo="$RUNNER_TEMP/YTLite-upstream"
+          source_bundle="$source_repo/layout/Library/Application Support/YTLite.bundle"
+          target_bundle="main/Tweaks/YTLite/var/jb/Library/Application Support/YTLite.bundle"
+          git clone --depth=1 --filter=blob:none --sparse https://github.com/dayanch96/YTLite.git "$source_repo"
+          git -C "$source_repo" sparse-checkout set "layout/Library/Application Support/YTLite.bundle"
+          test -d "$source_bundle"
+          while IFS= read -r -d '' source; do
+            relative="${source#"$source_bundle"/}"
+            mkdir -p "$target_bundle/$(dirname "$relative")"
+            cp "$source" "$target_bundle/$relative"
+          done < <(find "$source_bundle" -type f -name Localizable.strings -print0)
+          echo "YTLITE_SOURCE_COMMIT=$(git -C "$source_repo" rev-parse HEAD)" >> "$GITHUB_ENV"
+          echo "Applied current YTPlus translations from $(git -C "$source_repo" rev-parse --short HEAD)"
+
       - name: Prepare YTUHD dependencies
         run: |
           python3 - <<'PY'
