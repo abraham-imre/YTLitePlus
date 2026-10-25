@@ -126,7 +126,9 @@ BOOL isSelf() {
 %end
 
 %hook YTSettings
-- (void)setDisableMDXDeviceDiscovery:(BOOL)arg1 { %orig(YES); }
+- (void)setDisableMDXDeviceDiscovery:(BOOL)arg1 {
+    %orig(YES);
+}
 %end
 %end
 
