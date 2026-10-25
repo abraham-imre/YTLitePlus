@@ -72,7 +72,12 @@ UIColor *customColor = [UIColor colorWithRed:0.129 green:0.129 blue:0.129 alpha:
     } else if ([self.nextResponder isKindOfClass:NSClassFromString(@"YTFullscreenMetadataHighlightsCollectionViewController")]) {
     color = [UIColor clearColor];
     } else {
-    return isDarkMode() ? %orig(customColor) : %orig;
+        if (isDarkMode()) {
+            %orig(customColor);
+        } else {
+            %orig;
+        }
+        return;
     }
     %orig;
 }
