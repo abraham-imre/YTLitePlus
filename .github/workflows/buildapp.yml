@@ -67,7 +67,7 @@ jobs:
           submodules: recursive
 
       - name: Install Dependencies
-        run: brew install ldid dpkg make
+        run: brew install ldid dpkg make meson
 
       - name: Download Theos
         uses: actions/checkout@v4
@@ -165,6 +165,22 @@ jobs:
         env:
           THEOS: ${{ github.workspace }}/theos
           YOUTUBE_URL: ${{ env.URL_YT }}
+
+      - name: Prepare YTUHD dependencies
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          makefile = Path("main/Tweaks/YTUHD/Makefile")
+          content = makefile.read_text()
+          old = "$(THEOS_PROJECT_DIR)/vendor/"
+          new = "$(THEOS_PROJECT_DIR)/Tweaks/YTUHD/vendor/"
+          if old not in content:
+              raise SystemExit(f"Expected vendor paths not found in {makefile}")
+          makefile.write_text(content.replace(old, new))
+          PY
+          main/Tweaks/YTUHD/vendor/build_libvpx.sh
+          main/Tweaks/YTUHD/vendor/build_dav1d.sh
 
       - name: Build Package
         id: build_package
