@@ -182,13 +182,16 @@ jobs:
           THEOS: ${{ github.workspace }}/theos
           YOUTUBE_URL: ${{ env.URL_YT }}
 
-      - name: Download selected YTPlus package
+      - name: Download and unpack selected YTPlus package
         run: |
           mkdir -p main/Tweaks/YTLite
           package="main/Tweaks/YTLite/com.dvntm.ytlite_${YTLITE_DEB_VERSION}_iphoneos-arm64.deb"
           curl --fail --location --silent --show-error --output "$package" "$YTLITE_DEB_URL"
           test -s "$package"
-          echo "Downloaded YTPlus $YTLITE_VERSION package: $(du -h "$package" | cut -f1)"
+          dpkg-deb --extract "$package" main/Tweaks/YTLite
+          test -s "main/Tweaks/YTLite/var/jb/Library/MobileSubstrate/DynamicLibraries/YTLite.dylib"
+          test -d "main/Tweaks/YTLite/var/jb/Library/Application Support/YTLite.bundle"
+          echo "Downloaded and unpacked YTPlus $YTLITE_VERSION package: $(du -h "$package" | cut -f1)"
 
       - name: Prepare YTUHD dependencies
         run: |
