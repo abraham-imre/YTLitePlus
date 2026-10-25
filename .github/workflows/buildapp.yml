@@ -251,6 +251,36 @@ jobs:
           BUNDLE_ID: ${{ inputs.bundle_id }}
           APP_NAME: ${{ inputs.app_name }}
 
+      - name: Bundle Alderis for jailed install
+        run: |
+          ipa="${{ github.workspace }}/main/packages/${{ steps.build_package.outputs.package }}"
+          framework="$(find main/.theos -type d -name Alderis.framework -print -quit)"
+          if [ -z "$framework" ]; then
+            echo "Alderis.framework was not produced by the Alderis build" >&2
+            find main/.theos -iname '*alderis*' -print >&2 | head -100
+            exit 1
+          fi
+
+          work="$(mktemp -d)"
+          unzip -q "$ipa" -d "$work"
+          app="$work/Payload/YouTube.app"
+          mkdir -p "$app/Frameworks"
+          rm -rf "$app/Frameworks/Alderis.framework"
+          cp -R "$framework" "$app/Frameworks/Alderis.framework"
+          rm -rf "$app/Frameworks/Alderis.framework/_CodeSignature"
+
+          # Alderis currently links with its jailbreak filesystem install path.
+          # Rewrite both the dependency and framework ID for a sideloaded app.
+          install_name_tool -id '@rpath/Alderis.framework/Alderis' \
+            "$app/Frameworks/Alderis.framework/Alderis"
+          install_name_tool -change '/Library/Frameworks/Alderis.framework/Alderis' \
+            '@rpath/Alderis.framework/Alderis' "$app/Frameworks/YTLitePlus.dylib"
+          otool -L "$app/Frameworks/YTLitePlus.dylib" | grep -F '@rpath/Alderis.framework/Alderis'
+
+          rm -f "$ipa"
+          ditto -c -k --sequesterRsrc --keepParent "$work/Payload" "$ipa"
+          rm -rf "$work"
+
       - name: Upload Artifact
         if: ${{ inputs.upload_artifact }}
         uses: actions/upload-artifact@v4
