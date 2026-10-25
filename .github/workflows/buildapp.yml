@@ -276,17 +276,21 @@ jobs:
           old_path='/Library/Frameworks/Alderis.framework/Alderis'
           new_path='@rpath/Alderis.framework/Alderis'
           while IFS= read -r -d '' binary; do
-            if otool -L "$binary" 2>/dev/null | grep -Fq "$old_path"; then
-              install_name_tool -change "$old_path" "$new_path" "$binary"
+            if file -b "$binary" | grep -q 'Mach-O'; then
+              if otool -L "$binary" 2>/dev/null | grep -Fq "$old_path"; then
+                install_name_tool -change "$old_path" "$new_path" "$binary"
+              fi
             fi
-          done < <(find "$app" -type f -print0)
+          done < <(find "$app/Frameworks" -type f -print0)
 
           while IFS= read -r -d '' binary; do
-            if otool -L "$binary" 2>/dev/null | grep -Fq "$old_path"; then
-              echo "Unfixed Alderis install-name reference in $binary" >&2
-              exit 1
+            if file -b "$binary" | grep -q 'Mach-O'; then
+              if otool -L "$binary" 2>/dev/null | grep -Fq "$old_path"; then
+                echo "Unfixed Alderis install-name reference in $binary" >&2
+                exit 1
+              fi
             fi
-          done < <(find "$app" -type f -print0)
+          done < <(find "$app/Frameworks" -type f -print0)
           otool -L "$app/Frameworks/YTLitePlus.dylib" | grep -F "$new_path"
           otool -L "$app/Frameworks/libcolorpicker.dylib" | grep -F "$new_path"
 
